@@ -1,4 +1,4 @@
-module github.com/yyh-gl/pr-review-notification
+module github.com/yyh-gl/gocr
 
 go 1.14
 

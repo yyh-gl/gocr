@@ -3,16 +3,16 @@ package main
 import (
 	"fmt"
 
-	"github.com/yyh-gl/pr-review-notification/internal/github"
-	"github.com/yyh-gl/pr-review-notification/internal/yaml"
+	"github.com/yyh-gl/gocr/internal/github"
+	"github.com/yyh-gl/gocr/internal/yaml"
 )
 
 func main() {
 	ct := yaml.LoadRepositoryConfig()
 
-	for repoName, repoDetail := range ct.Repositories {
-		c := github.NewEnterpriseClient(repoDetail.EnterpriseHost, repoDetail.AccessToken)
-		prs, err := c.FetchPullRequestDetails(repoDetail.Owner, repoName)
+	for _, r := range ct.Repositories {
+		c := github.NewEnterpriseClient(r.EnterpriseHost, r.AccessToken)
+		prs, err := c.FetchPullRequestDetails(r.Owner, r.Name)
 		if err != nil {
 			fmt.Println(err)
 		}

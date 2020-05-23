@@ -10,10 +10,11 @@ import (
 
 type (
 	ConfigTemplate struct {
-		Repositories map[string]Repository `yaml:"repos"`
+		Repositories []Repository `yaml:"repos"`
 	}
 
 	Repository struct {
+		Name           string `yaml:"name"`
 		Owner          string `yaml:"owner"`
 		IsEnterprise   bool   `yaml:"is_enterprise"`
 		EnterpriseHost string `yaml:"enterprise_host"`
