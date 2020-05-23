@@ -4,19 +4,21 @@ import (
 	"fmt"
 
 	"github.com/yyh-gl/pr-review-notification/internal/github"
+	"github.com/yyh-gl/pr-review-notification/internal/yaml"
 )
 
 func main() {
-	//c := prn.NewGeneralClient("")
-	c := github.NewEnterpriseClient("", "")
-	prs, err := c.FetchPullRequestDetails("dmm-app", "pointclub-android")
-	if err != nil {
-		fmt.Println(err)
-	}
+	ct := yaml.LoadRepositoryConfig()
 
-	for _, pr := range prs {
-		fmt.Println("========================")
-		fmt.Println(pr)
-		fmt.Println("========================")
+	for repoName, repoDetail := range ct.Repositories {
+		c := github.NewEnterpriseClient(repoDetail.EnterpriseHost, repoDetail.AccessToken)
+		prs, err := c.FetchPullRequestDetails(repoDetail.Owner, repoName)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		for _, pr := range prs {
+			fmt.Println(pr)
+		}
 	}
 }
