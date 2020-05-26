@@ -30,7 +30,7 @@ func NewGeneralClient(at string) *Client {
 	return &Client{
 		host:         "https://api.github.com",
 		isEnterprise: false,
-		accessToken:  at,
+		accessToken:  "token " + at,
 	}
 }
 
@@ -38,7 +38,7 @@ func NewEnterpriseClient(h, at string) *Client {
 	return &Client{
 		host:         h,
 		isEnterprise: true,
-		accessToken:  at,
+		accessToken:  "token " + at,
 	}
 }
 
