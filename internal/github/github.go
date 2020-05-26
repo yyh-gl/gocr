@@ -16,6 +16,8 @@ type (
 		accessToken  string
 	}
 
+	PullRequests []PullRequest
+
 	PullRequest struct {
 		Title          string         `json:"title"`
 		URL            string         `json:"url"`
@@ -46,13 +48,13 @@ func NewEnterpriseClient(h, at string) *Client {
 	}
 }
 
-func (c Client) FetchPullRequestDetails(owner, repo string) ([]*PullRequest, error) {
+func (c Client) FetchPullRequestDetails(owner, repo string) (*PullRequests, error) {
 	urls, err := c.fetchOpenedPullRequestURLs(owner, repo)
 	if err != nil {
 		return nil, err
 	}
 
-	prs := make([]*PullRequest, 0)
+	prs := make(PullRequests, 0)
 	for _, u := range urls {
 		req, err := http.NewRequest("GET", u, nil)
 		if err != nil {
@@ -77,10 +79,10 @@ func (c Client) FetchPullRequestDetails(owner, repo string) ([]*PullRequest, err
 			return nil, err
 		}
 
-		prs = append(prs, &pr)
+		prs = append(prs, pr)
 	}
 
-	return prs, nil
+	return &prs, nil
 }
 
 func (c Client) fetchOpenedPullRequestURLs(owner, repo string) ([]string, error) {
@@ -137,4 +139,11 @@ func (pr PullRequest) ConvertToSlackDTO() *slack.PullRequest {
 		Reviewers:   reviwers,
 		IsMergeable: pr.MergeableState.isMergeable(),
 	}
+}
+
+func (prs PullRequests) ConvertToSlackDTOs() (sprs []slack.PullRequest) {
+	for _, pr := range prs {
+		sprs = append(sprs, *pr.ConvertToSlackDTO())
+	}
+	return sprs
 }
