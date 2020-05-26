@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/yyh-gl/gocr/internal/slack"
 )
 
 type (
@@ -15,15 +17,17 @@ type (
 	}
 
 	PullRequest struct {
-		Title          string     `json:"title"`
-		URL            string     `json:"url"`
-		Reviewers      []Reviewer `json:"requested_reviewers"`
-		MergeableState string     `json:"mergeable_state"`
+		Title          string         `json:"title"`
+		URL            string         `json:"url"`
+		Reviewers      []Reviewer     `json:"requested_reviewers"`
+		MergeableState MergeableState `json:"mergeable_state"`
 	}
 
 	Reviewer struct {
 		Login string `json:"login"`
 	}
+
+	MergeableState string
 )
 
 func NewGeneralClient(at string) *Client {
@@ -115,4 +119,22 @@ func (c Client) fetchOpenedPullRequestURLs(owner, repo string) ([]string, error)
 		urls = append(urls, pr.URL)
 	}
 	return urls, nil
+}
+
+func (ms MergeableState) isMergeable() bool {
+	return ms == "clean"
+}
+
+func (pr PullRequest) ConvertToSlackDTO() *slack.PullRequest {
+	reviwers := make([]string, len(pr.Reviewers))
+	for i, r := range pr.Reviewers {
+		reviwers[i] = r.Login
+	}
+
+	return &slack.PullRequest{
+		Title:       pr.Title,
+		URL:         pr.URL,
+		Reviewers:   reviwers,
+		IsMergeable: pr.MergeableState.isMergeable(),
+	}
 }
