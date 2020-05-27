@@ -12,8 +12,13 @@ func main() {
 	ct := yaml.LoadConfigFile()
 
 	for _, r := range ct.Repositories {
-		//c := github.NewEnterpriseClient(r.EnterpriseHost, r.AccessToken)
-		c := github.NewGeneralClient(r.AccessToken)
+		c := &github.Client{}
+		if r.IsEnterprise {
+			c = github.NewEnterpriseClient(r.EnterpriseHost, r.AccessToken)
+		} else {
+			c = github.NewGeneralClient(r.AccessToken)
+		}
+
 		prs, err := c.FetchPullRequestDetails(r.Owner, r.Name)
 		if err != nil {
 			fmt.Println(err)
