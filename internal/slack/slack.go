@@ -51,7 +51,6 @@ func (c Client) Send(t string) {
 	}
 
 	slack.Send(c.webHook, "", p)
-
 }
 
 func CreateMessage(repoName string, prs []PullRequest, userMap []string) string {
