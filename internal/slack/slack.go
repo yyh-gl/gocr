@@ -32,19 +32,15 @@ func NewClient(wh, c, un, ie string) *Client {
 	}
 }
 
-func (c Client) Send(t string) {
-	// TODO: load from config file
-	color := "warning"
-	a := slack.Attachment{Color: &color}
-
+func (c Client) Send(repoName string, attachments []slack.Attachment) {
 	p := slack.Payload{
 		Username:    c.username,
 		IconUrl:     "",
 		IconEmoji:   ":" + c.iconEmoji + ":",
 		Channel:     c.channel,
-		Text:        t,
+		Text:        "▼ *" + repoName + "*\n",
 		LinkNames:   "true",
-		Attachments: []slack.Attachment{a},
+		Attachments: attachments,
 		UnfurlLinks: false,
 		UnfurlMedia: false,
 		Markdown:    false,
@@ -53,7 +49,7 @@ func (c Client) Send(t string) {
 	slack.Send(c.webHook, "", p)
 }
 
-func CreateMessage(repoName string, prs []PullRequest, userMap []string) string {
+func CreateMessage(prs []PullRequest, userMap []string) []slack.Attachment {
 	um := make(map[string]string, 0)
 	if len(userMap) > 0 {
 		for _, m := range userMap {
@@ -62,7 +58,7 @@ func CreateMessage(repoName string, prs []PullRequest, userMap []string) string 
 		}
 	}
 
-	msg := "▼ *" + repoName + "*\n"
+	attachments := make([]slack.Attachment, 0)
 	for i, pr := range prs {
 		mentions := make([]string, len(pr.Reviewers))
 		for i, r := range pr.Reviewers {
@@ -73,15 +69,25 @@ func CreateMessage(repoName string, prs []PullRequest, userMap []string) string 
 			}
 		}
 
-		tmp := make([]string, 4)
-		tmp[0] = fmt.Sprintf("\n*%d: %s*", i+1, pr.Title)
-		tmp[1] = pr.URL
-		tmp[2] = strings.Join(mentions, ", ")
-		tmp[3] = "Please review"
+		tmp := make([]string, 3)
+		tmp[0] = pr.URL
+		tmp[1] = strings.Join(mentions, ", ")
+		tmp[2] = "Please review"
+		color := "warning"
 		if pr.IsMergeable {
-			tmp[3] = "Let's Merge!"
+			tmp[2] = "Let's Merge!"
+			color = "good"
 		}
-		msg += strings.Join(tmp, "\n") + "\n"
+		text := strings.Join(tmp, "\n") + "\n"
+
+		f := slack.Field{
+			Title: fmt.Sprintf("\n*%d: %s*", i+1, pr.Title),
+			Value: text,
+		}
+
+		a := slack.Attachment{Color: &color}
+		a.AddField(f)
+		attachments = append(attachments, a)
 	}
-	return msg
+	return attachments
 }

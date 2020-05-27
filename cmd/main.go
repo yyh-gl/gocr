@@ -28,8 +28,8 @@ func main() {
 			ss := ct.Slacks[r.SlackID]
 			sc := slack.NewClient(ss.WebHook, ss.Channel, ss.Username, ss.IconEmoji)
 
-			msg := slack.CreateMessage(r.Name, prs.ConvertToSlackDTOs(), ss.UserMap)
-			sc.Send(msg)
+			msg := slack.CreateMessage(prs.ConvertToSlackDTOs(), ss.UserMap)
+			sc.Send(r.Name, msg)
 		}
 	}
 }
