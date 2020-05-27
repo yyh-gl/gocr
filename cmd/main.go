@@ -3,17 +3,13 @@ package main
 import (
 	"fmt"
 
-	"github.com/yyh-gl/gocr/internal/slack"
-
 	"github.com/yyh-gl/gocr/internal/github"
-
+	"github.com/yyh-gl/gocr/internal/slack"
 	"github.com/yyh-gl/gocr/internal/yaml"
 )
 
 func main() {
-	ct := yaml.LoadRepositoryConfig()
-
-	//sc := slack.NewClient("", "")
+	ct := yaml.LoadConfigFile()
 
 	for _, r := range ct.Repositories {
 		//c := github.NewEnterpriseClient(r.EnterpriseHost, r.AccessToken)
@@ -24,10 +20,11 @@ func main() {
 		}
 
 		if len(*prs) > 0 {
-			msg := slack.CreateMessage(prs.ConvertToSlackDTOs())
-			fmt.Println("========================")
-			fmt.Println(msg)
-			fmt.Println("========================")
+			ss := ct.Slacks[r.SlackID]
+			sc := slack.NewClient(ss.WebHook, ss.Channel, ss.Username, ss.IconEmoji)
+
+			msg := slack.CreateMessage(r.Name, prs.ConvertToSlackDTOs(), ss.UserMap)
+			sc.Send(msg)
 		}
 	}
 }
