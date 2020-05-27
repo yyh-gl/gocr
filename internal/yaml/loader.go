@@ -28,7 +28,7 @@ type (
 		Channel   string   `yaml:"channel"`
 		Username  string   `yaml:"username"`
 		IconEmoji string   `yaml:"icon_emoji"`
-		UserMap   []string `yaml:"user_map"`
+		UserMap   []string `yaml:"user_map,omitempty"`
 		WebHook   string   `yaml:"web_hook"`
 	}
 )
