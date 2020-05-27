@@ -10,7 +10,8 @@ import (
 
 type (
 	ConfigTemplate struct {
-		Repositories []Repository `yaml:"repos"`
+		Repositories []Repository     `yaml:"repos"`
+		Slacks       map[string]Slack `yaml:"slacks"`
 	}
 
 	Repository struct {
@@ -19,10 +20,20 @@ type (
 		IsEnterprise   bool   `yaml:"is_enterprise"`
 		EnterpriseHost string `yaml:"enterprise_host"`
 		AccessToken    string `yaml:"access_token"`
+		SlackID        string `yaml:"slack_id"`
+	}
+
+	Slack struct {
+		ID        string   `yaml:"id"`
+		Channel   string   `yaml:"channel"`
+		Username  string   `yaml:"username"`
+		IconEmoji string   `yaml:"icon_emoji"`
+		UserMap   []string `yaml:"user_map"`
+		WebHook   string   `yaml:"web_hook"`
 	}
 )
 
-func LoadRepositoryConfig() *ConfigTemplate {
+func LoadConfigFile() *ConfigTemplate {
 	f, err := os.Open(".gocr.yml")
 	if err != nil {
 		fmt.Println(err)
@@ -39,6 +50,5 @@ func LoadRepositoryConfig() *ConfigTemplate {
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	return &ct
 }
