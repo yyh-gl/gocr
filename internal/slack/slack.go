@@ -17,7 +17,7 @@ type (
 
 	PullRequest struct {
 		Title       string
-		URL         string
+		HtmlURL     string
 		Reviewers   []string
 		IsMergeable bool
 	}
@@ -70,7 +70,7 @@ func CreateMessage(prs []PullRequest, userMap []string) []slack.Attachment {
 		}
 
 		tmp := make([]string, 3)
-		tmp[0] = pr.URL
+		tmp[0] = pr.HtmlURL
 		tmp[1] = strings.Join(mentions, ", ")
 		tmp[2] = "Please review"
 		color := "warning"

@@ -20,7 +20,7 @@ type (
 
 	PullRequest struct {
 		Title          string         `json:"title"`
-		URL            string         `json:"url"`
+		HtmlURL        string         `json:"html_url"`
 		Reviewers      []Reviewer     `json:"requested_reviewers"`
 		MergeableState MergeableState `json:"mergeable_state"`
 	}
@@ -135,7 +135,7 @@ func (pr PullRequest) ConvertToSlackDTO() *slack.PullRequest {
 
 	return &slack.PullRequest{
 		Title:       pr.Title,
-		URL:         pr.URL,
+		HtmlURL:     pr.HtmlURL,
 		Reviewers:   reviwers,
 		IsMergeable: pr.MergeableState.isMergeable(),
 	}
