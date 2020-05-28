@@ -1,0 +1,34 @@
+# Repository settings
+repos:
+  - name: gocr-enterprise
+    owner: yyh-gl
+    # If this is on enterprise, is_enterprise is true
+    is_enterprise: true
+    # If is_enterprise is true, you have to set this field
+    enterprise_host: https://git.yyh-gl.com/api/v3
+    access_token: hogehogetoken
+    # ID of Slack notification destination setting
+    slack_id: dev-team
+
+  - name: gocr
+    owner: yyh-gl
+    access_token: foofootoken
+    slack_id: personal
+
+# Slack notification destination settings
+slacks:
+  # ID of setting
+  dev-team:
+    channel: pr_notification
+    username: Notifier
+    icon_emoji: smirk
+    # Mapping of GitHub username and Slack username
+    user_map:
+      - yyh-gl:yyh_gl
+    web_hook: https://hooks.slack.com/hoge/foo
+
+  personal:
+    channel: pr_notification
+    username: Notifier
+    icon_emoji: smile
+    web_hook: https://hooks.slack.com/hoge/foo
