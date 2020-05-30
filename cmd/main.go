@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/yyh-gl/gocr/internal/github"
 	"github.com/yyh-gl/gocr/internal/slack"
@@ -12,11 +13,11 @@ func main() {
 	ct := yaml.LoadConfigFile()
 
 	for _, r := range ct.Repositories {
-		c := &github.Client{}
+		var c *github.Client
 		if r.IsEnterprise {
-			c = github.NewEnterpriseClient(r.EnterpriseHost, r.AccessToken)
+			c = github.NewEnterpriseClient(http.DefaultClient, r.EnterpriseHost, r.AccessToken)
 		} else {
-			c = github.NewGeneralClient(r.AccessToken)
+			c = github.NewGeneralClient(http.DefaultClient, r.AccessToken)
 		}
 
 		prs, err := c.FetchPullRequestDetails(r.Owner, r.Name)

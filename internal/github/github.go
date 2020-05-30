@@ -11,6 +11,7 @@ import (
 
 type (
 	Client struct {
+		httpClient   *http.Client
 		host         string
 		isEnterprise bool
 		accessToken  string
@@ -32,16 +33,18 @@ type (
 	MergeableState string
 )
 
-func NewGeneralClient(at string) *Client {
+func NewGeneralClient(hc *http.Client, at string) *Client {
 	return &Client{
+		httpClient:   hc,
 		host:         "https://api.github.com",
 		isEnterprise: false,
 		accessToken:  "token " + at,
 	}
 }
 
-func NewEnterpriseClient(h, at string) *Client {
+func NewEnterpriseClient(hc *http.Client, h, at string) *Client {
 	return &Client{
+		httpClient:   hc,
 		host:         h,
 		isEnterprise: true,
 		accessToken:  "token " + at,
@@ -62,8 +65,7 @@ func (c Client) FetchPullRequestDetails(owner, repo string) (*PullRequests, erro
 		}
 		req.Header.Set("Authorization", c.accessToken)
 
-		client := http.Client{}
-		resp, err := client.Do(req)
+		resp, err := c.httpClient.Do(req)
 		if err != nil {
 			return nil, err
 		}
@@ -99,8 +101,7 @@ func (c Client) fetchOpenedPullRequestURLs(owner, repo string) ([]string, error)
 	}
 	req.Header.Set("Authorization", c.accessToken)
 
-	client := http.Client{}
-	resp, err := client.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
