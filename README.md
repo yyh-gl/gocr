@@ -13,8 +13,7 @@ You can easily set the repository and notification destination.
 
 ## Introduction
 
+1. `$ go get github.com/yyh-gl/gocr`
 1. Set repositories and notification destinations into `.gocr.yml`.  
 Example `.gocr.yml` is [here](https://github.com/yyh-gl/gocr/blob/master/.gocr.example.yml).
-1. Run GoCR!
-
-WIP
+1. `$ gocr`
