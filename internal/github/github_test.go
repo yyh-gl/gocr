@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/dnaeon/go-vcr/recorder"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/yyh-gl/gocr/internal/github"
 )
