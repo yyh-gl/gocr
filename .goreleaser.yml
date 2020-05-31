@@ -1,0 +1,9 @@
+builds:
+  - main: cmd/main.go
+    binary: gocr
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
