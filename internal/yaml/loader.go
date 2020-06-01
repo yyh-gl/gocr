@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	"gopkg.in/yaml.v2"
 )
@@ -34,13 +33,9 @@ type (
 	}
 )
 
-func LoadConfigFile() *ConfigTemplate {
-	exe, err := os.Executable()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	f, err := os.Open(filepath.Dir(exe) + "/.gocr.yml")
+func LoadConfigFile(configPath string) *ConfigTemplate {
+	// TODO: .yaml
+	f, err := os.Open(configPath)
 	if err != nil {
 		fmt.Println(err)
 	}
