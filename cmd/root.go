@@ -48,8 +48,13 @@ var (
 )
 
 func init() {
-	// FIXME: default value
-	rootCmd.Flags().StringVarP(&configPath, "cfgPath", "c", "~/.gocr.yml", "Path to config file")
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	rootCmd.Flags().StringVarP(&configPath, "cfgPath", "c", homeDir+"/.gocr.yml", "Path to config file")
 }
 
 func Execute() {
