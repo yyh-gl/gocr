@@ -4,6 +4,8 @@ GoCR is a notifier of code review requests.
 
 You can easily set the repository and notification destination.
 
+<img alt="image picture" src="./assets/sample.png" height="200" />
+
 ## Supported tools
 
 - Code Management services
