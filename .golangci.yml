@@ -1,0 +1,11 @@
+run:
+  deadline: 30s
+  tests: true
+
+linters:
+  disable-all: true
+  enable:
+    - goimports
+    - golint
+    - govet
+    - errcheck
