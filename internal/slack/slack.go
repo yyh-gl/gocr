@@ -60,18 +60,25 @@ func CreateMessage(prs []PullRequest, userMap []string) []slack.Attachment {
 
 	attachments := make([]slack.Attachment, 0)
 	for i, pr := range prs {
-		mentions := make([]string, len(pr.Reviewers))
-		for i, r := range pr.Reviewers {
-			if len(userMap) > 0 {
-				mentions[i] = "@" + um[r]
-			} else {
-				mentions[i] = "@" + r
+		mentionStr := "no reviewer"
+
+		// TODO: refactoring. make more simple
+		reviewersCount := len(pr.Reviewers)
+		if reviewersCount > 0 {
+			mentions := make([]string, reviewersCount)
+			for i, r := range pr.Reviewers {
+				if len(userMap) > 0 {
+					mentions[i] = "@" + um[r]
+				} else {
+					mentions[i] = "@" + r
+				}
 			}
+			mentionStr = strings.Join(mentions, ", ")
 		}
 
 		tmp := make([]string, 3)
 		tmp[0] = pr.HTMLURL
-		tmp[1] = strings.Join(mentions, ", ")
+		tmp[1] = mentionStr
 		tmp[2] = "Please review"
 		color := "warning"
 		if pr.IsMergeable {
