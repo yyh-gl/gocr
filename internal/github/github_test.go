@@ -23,7 +23,7 @@ func Test_GeneralClient_FetchPullRequestDetails(t *testing.T) {
 			want: &github.PullRequests{
 				github.PullRequest{
 					Title:          "test",
-					HtmlURL:        "https://github.com/yyh-gl/gocr/pull/45",
+					HTMLURL:        "https://github.com/yyh-gl/gocr/pull/45",
 					Reviewers:      []github.Reviewer{{Login: "yyh-gl-robo"}},
 					MergeableState: "clean",
 				},
@@ -32,7 +32,7 @@ func Test_GeneralClient_FetchPullRequestDetails(t *testing.T) {
 	}
 
 	r, _ := recorder.New("../../test/cassettes/GeneralClient_FetchPullRequestDetails")
-	defer r.Stop()
+	defer func() { _ = r.Stop() }()
 	hc := http.DefaultClient
 	hc.Transport = r
 
