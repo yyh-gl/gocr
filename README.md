@@ -20,7 +20,7 @@ You will soon be able to start a notification of code review request.
 Example `.gocr.yml` is [here](https://github.com/yyh-gl/gocr/blob/master/.gocr.example.yml).
 1. `$ gocr`
 
-## Detail setting
+### Path setting of config file
 
 GoCR load `.gocr.yml` from root directory by default.
 
