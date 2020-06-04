@@ -1,8 +1,8 @@
 # GoCR
 
-GoCR is a notifier of code review requests.
+GoCR provides easy way for notifying request of code review.
 
-You can easily set the repository and notification destination.
+You will soon be able to start a notification of code review request.
 
 <img alt="image picture" src="./assets/sample.png" height="200" />
 
@@ -20,7 +20,7 @@ You can easily set the repository and notification destination.
 Example `.gocr.yml` is [here](https://github.com/yyh-gl/gocr/blob/master/.gocr.example.yml).
 1. `$ gocr`
 
-## Setting
+## Detail setting
 
 GoCR load `.gocr.yml` from root directory by default.
 
