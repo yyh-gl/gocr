@@ -20,14 +20,20 @@ type (
 
 func NewClient(sender interface{}) sender.Sender {
 	// TODO: yaml読み取りデータのバリデーションチェック
-
 	s := sender.(map[interface{}]interface{})
+
+	// TODO: refactoring
+	var userMap []interface{}
+	if _, ok := s["user_map"]; ok {
+		userMap = s["user_map"].([]interface{})
+	}
+
 	return &Sender{
 		webHook:   s["web_hook"].(string),
 		channel:   s["channel"].(string),
 		username:  s["username"].(string),
 		iconEmoji: s["icon_emoji"].(string),
-		userMap:   s["user_map"].([]interface{}),
+		userMap:   userMap,
 	}
 }
 
