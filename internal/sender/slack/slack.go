@@ -5,39 +5,39 @@ import (
 	"strings"
 
 	"github.com/ashwanthkumar/slack-go-webhook"
+	"github.com/yyh-gl/gocr/internal/sender"
 )
 
 type (
-	Client struct {
+	Sender struct {
 		webHook   string
 		channel   string
 		username  string
 		iconEmoji string
-	}
-
-	PullRequest struct {
-		Title       string
-		HTMLURL     string
-		Reviewers   []string
-		IsMergeable bool
+		userMap   []interface{}
 	}
 )
 
-func NewClient(wh, c, un, ie string) *Client {
-	return &Client{
-		webHook:   wh,
-		channel:   c,
-		username:  un,
-		iconEmoji: ie,
+func NewClient(sender interface{}) sender.Sender {
+	// TODO: yaml読み取りデータのバリデーションチェック
+
+	s := sender.(map[interface{}]interface{})
+	return &Sender{
+		webHook:   s["web_hook"].(string),
+		channel:   s["channel"].(string),
+		username:  s["username"].(string),
+		iconEmoji: s["icon_emoji"].(string),
+		userMap:   s["user_map"].([]interface{}),
 	}
 }
 
-func (c Client) Send(repoName string, attachments []slack.Attachment) {
+func (s Sender) Send(repoName string, materials sender.Materials) error {
+	attachments := createMessage(materials, s.userMap)
 	p := slack.Payload{
-		Username:    c.username,
+		Username:    s.username,
 		IconUrl:     "",
-		IconEmoji:   ":" + c.iconEmoji + ":",
-		Channel:     c.channel,
+		IconEmoji:   ":" + s.iconEmoji + ":",
+		Channel:     s.channel,
 		Text:        "▼ *" + repoName + "*\n",
 		LinkNames:   "true",
 		Attachments: attachments,
@@ -46,27 +46,28 @@ func (c Client) Send(repoName string, attachments []slack.Attachment) {
 		Markdown:    false,
 	}
 
-	slack.Send(c.webHook, "", p)
+	slack.Send(s.webHook, "", p)
+	return nil
 }
 
-func CreateMessage(prs []PullRequest, userMap []string) []slack.Attachment {
+func createMessage(materials sender.Materials, userMap []interface{}) []slack.Attachment {
 	um := make(map[string]string, 0)
 	if len(userMap) > 0 {
 		for _, m := range userMap {
-			splitUserMap := strings.SplitN(m, ":", 2)
+			splitUserMap := strings.SplitN(m.(string), ":", 2)
 			um[splitUserMap[0]] = splitUserMap[1]
 		}
 	}
 
 	attachments := make([]slack.Attachment, 0)
-	for i, pr := range prs {
+	for i, m := range materials {
 		mentionStr := "no reviewer"
 
 		// TODO: refactoring. make more simple
-		reviewersCount := len(pr.Reviewers)
+		reviewersCount := len(m.Reviewers)
 		if reviewersCount > 0 {
 			mentions := make([]string, reviewersCount)
-			for i, r := range pr.Reviewers {
+			for i, r := range m.Reviewers {
 				if len(userMap) > 0 {
 					mentions[i] = "@" + um[r]
 				} else {
@@ -77,18 +78,18 @@ func CreateMessage(prs []PullRequest, userMap []string) []slack.Attachment {
 		}
 
 		tmp := make([]string, 3)
-		tmp[0] = pr.HTMLURL
+		tmp[0] = m.LinkURL
 		tmp[1] = mentionStr
 		tmp[2] = "Please review"
 		color := "warning"
-		if pr.IsMergeable {
+		if m.IsMergeable {
 			tmp[2] = "Let's Merge!"
 			color = "good"
 		}
 		text := strings.Join(tmp, "\n") + "\n"
 
 		f := slack.Field{
-			Title: fmt.Sprintf("\n*%d: %s*", i+1, pr.Title),
+			Title: fmt.Sprintf("\n*%d: %s*", i+1, m.Title),
 			Value: text,
 		}
 
