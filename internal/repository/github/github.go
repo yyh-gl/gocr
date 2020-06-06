@@ -1,58 +1,75 @@
 package github
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 
-	"github.com/yyh-gl/gocr/internal/slack"
+	"github.com/yyh-gl/gocr/internal/repository"
+	"github.com/yyh-gl/gocr/internal/sender"
 )
 
 type (
-	Client struct {
+	Repository struct {
 		httpClient   *http.Client
-		host         string
-		isEnterprise bool
+		name         string
+		owner        string
 		accessToken  string
+		senderID     string
+		isEnterprise bool
+		host         string
 	}
-
-	PullRequests []PullRequest
 
 	PullRequest struct {
 		Title          string         `json:"title"`
-		HTMLURL        string         `json:"html_url"`
+		LinkURL        string         `json:"html_url"`
 		Reviewers      []Reviewer     `json:"requested_reviewers"`
 		MergeableState MergeableState `json:"mergeable_state"`
 	}
 
+	MergeableState string
+
+	PullRequests []PullRequest
+
 	Reviewer struct {
 		Login string `json:"login"`
 	}
-
-	MergeableState string
 )
 
-func NewGeneralClient(hc *http.Client, at string) *Client {
-	return &Client{
-		httpClient:   hc,
-		host:         "https://api.github.com",
-		isEnterprise: false,
-		accessToken:  "token " + at,
-	}
-}
+func NewClient(hc *http.Client, repo interface{}) repository.Repository {
+	// TODO: yaml読み取りデータのバリデーションチェック
+	r := repo.(map[interface{}]interface{})
 
-func NewEnterpriseClient(hc *http.Client, h, at string) *Client {
-	return &Client{
+	ie, ok := r["is_enterprise"]
+	isEnterprise := ok && ie.(bool)
+
+	h := "https://api.github.com"
+	if isEnterprise {
+		h = r["enterprise_host"].(string)
+	}
+	return &Repository{
 		httpClient:   hc,
+		name:         r["name"].(string),
+		owner:        r["owner"].(string),
+		accessToken:  r["access_token"].(string),
+		senderID:     r["sender"].(string),
+		isEnterprise: isEnterprise,
 		host:         h,
-		isEnterprise: true,
-		accessToken:  "token " + at,
 	}
 }
 
-func (c Client) FetchPullRequestDetails(owner, repo string) (*PullRequests, error) {
-	urls, err := c.fetchOpenedPullRequestURLs(owner, repo)
+func (r Repository) Name() string {
+	return r.name
+}
+
+func (r Repository) SenderID() string {
+	return r.senderID
+}
+
+func (r Repository) FetchCodeReviewRequests(ctx context.Context) (repository.CodeReviewRequests, error) {
+	urls, err := r.fetchOpenedPullRequestURLs()
 	if err != nil {
 		return nil, err
 	}
@@ -63,9 +80,9 @@ func (c Client) FetchPullRequestDetails(owner, repo string) (*PullRequests, erro
 		if err != nil {
 			return nil, err
 		}
-		req.Header.Set("Authorization", c.accessToken)
+		req.Header.Set("Authorization", r.accessToken)
 
-		resp, err := c.httpClient.Do(req)
+		resp, err := r.httpClient.Do(req)
 		if err != nil {
 			return nil, err
 		}
@@ -76,7 +93,7 @@ func (c Client) FetchPullRequestDetails(owner, repo string) (*PullRequests, erro
 			return nil, err
 		}
 
-		pr := PullRequest{}
+		var pr PullRequest
 		if err := json.Unmarshal(b, &pr); err != nil {
 			return nil, err
 		}
@@ -87,21 +104,21 @@ func (c Client) FetchPullRequestDetails(owner, repo string) (*PullRequests, erro
 	return &prs, nil
 }
 
-func (c Client) fetchOpenedPullRequestURLs(owner, repo string) ([]string, error) {
+func (r Repository) fetchOpenedPullRequestURLs() ([]string, error) {
 	const endpointTemplate = "%s/repos/%s/%s/pulls?status=open"
 
 	type pullRequest struct {
 		URL string `json:"url"`
 	}
 
-	ep := fmt.Sprintf(endpointTemplate, c.host, owner, repo)
+	ep := fmt.Sprintf(endpointTemplate, r.host, r.owner, r.name)
 	req, err := http.NewRequest("GET", ep, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", c.accessToken)
+	req.Header.Set("Authorization", r.accessToken)
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := r.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -128,23 +145,28 @@ func (ms MergeableState) isMergeable() bool {
 	return ms == "clean"
 }
 
-func (pr PullRequest) ConvertToSlackDTO() *slack.PullRequest {
+func (pr PullRequest) ConvertToMsgMaterial() (*sender.Material, error) {
 	reviwers := make([]string, len(pr.Reviewers))
 	for i, r := range pr.Reviewers {
 		reviwers[i] = r.Login
 	}
 
-	return &slack.PullRequest{
+	return &sender.Material{
 		Title:       pr.Title,
-		HTMLURL:     pr.HTMLURL,
+		LinkURL:     pr.LinkURL,
 		Reviewers:   reviwers,
 		IsMergeable: pr.MergeableState.isMergeable(),
-	}
+	}, nil
 }
 
-func (prs PullRequests) ConvertToSlackDTOs() (sprs []slack.PullRequest) {
-	for _, pr := range prs {
-		sprs = append(sprs, *pr.ConvertToSlackDTO())
+func (prs PullRequests) ConvertToMsgMaterials() (sender.Materials, error) {
+	msgs := make(sender.Materials, len(prs))
+	for i, pr := range prs {
+		msg, err := pr.ConvertToMsgMaterial()
+		if err != nil {
+			return nil, err
+		}
+		msgs[i] = *msg
 	}
-	return sprs
+	return msgs, nil
 }
