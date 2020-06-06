@@ -1,4 +1,4 @@
-package loader
+package internal
 
 import (
 	"fmt"
@@ -20,7 +20,7 @@ type (
 	SenderSet map[string]map[string]interface{}
 )
 
-func LoadConfigFile(configPath string) *ConfigTemplate {
+func loadConfigFile(configPath string) *ConfigTemplate {
 	cp := strings.Replace(configPath, "yaml", "yml", 1)
 	f, err := os.Open(cp)
 	if err != nil {
