@@ -38,15 +38,21 @@ func NewClient(sender interface{}) sender.Sender {
 }
 
 func (s Sender) Send(repoName string, materials sender.Materials) error {
-	attachments := createMessage(materials, s.userMap)
+	t := "▼ *" + repoName + "*\nNo Requests\n"
+	var as []slack.Attachment = nil
+	if len(materials) > 0 {
+		t = "▼ *" + repoName + "*\n"
+		as = createMessage(materials, s.userMap)
+	}
+
 	p := slack.Payload{
 		Username:    s.username,
 		IconUrl:     "",
 		IconEmoji:   ":" + s.iconEmoji + ":",
 		Channel:     s.channel,
-		Text:        "▼ *" + repoName + "*\n",
+		Text:        t,
 		LinkNames:   "true",
-		Attachments: attachments,
+		Attachments: as,
 		UnfurlLinks: false,
 		UnfurlMedia: false,
 		Markdown:    false,
@@ -65,7 +71,7 @@ func createMessage(materials sender.Materials, userMap []interface{}) []slack.At
 		}
 	}
 
-	attachments := make([]slack.Attachment, 0)
+	attachments := make([]slack.Attachment, len(materials))
 	for i, m := range materials {
 		mentionStr := "no reviewer"
 
@@ -101,7 +107,7 @@ func createMessage(materials sender.Materials, userMap []interface{}) []slack.At
 
 		a := slack.Attachment{Color: &color}
 		a.AddField(f)
-		attachments = append(attachments, a)
+		attachments[i] = a
 	}
 	return attachments
 }
