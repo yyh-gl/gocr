@@ -27,6 +27,7 @@ func Test_FetchPullRequestDetails_NotForEnterprise(t *testing.T) {
 					Title:          "Update go version",
 					LinkURL:        "https://github.com/yyh-gl/gocr/pull/2",
 					Reviewers:      []github.Reviewer{},
+					Head:           github.Head{Label: "yyh-gl:samle2"},
 					MergeableState: "clean",
 				},
 			},
