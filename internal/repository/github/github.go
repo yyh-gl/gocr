@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/yyh-gl/gocr/internal/repository"
 	"github.com/yyh-gl/gocr/internal/sender"
@@ -18,15 +19,25 @@ type (
 		owner        string
 		accessToken  string
 		senderID     string
+		filters      Filters
 		isEnterprise bool
 		host         string
+	}
+
+	Filters struct {
+		branch []string
 	}
 
 	PullRequest struct {
 		Title          string         `json:"title"`
 		LinkURL        string         `json:"html_url"`
 		Reviewers      []Reviewer     `json:"requested_reviewers"`
+		Head           Head           `json:"head"`
 		MergeableState MergeableState `json:"mergeable_state"`
+	}
+
+	Head struct {
+		Label string `json:"label"`
 	}
 
 	MergeableState string
@@ -49,12 +60,22 @@ func NewClient(hc *http.Client, repo interface{}) repository.Repository {
 	if isEnterprise {
 		h = r["enterprise_host"].(string)
 	}
+
+	filters := r["filters"].(map[interface{}]interface{})
+	branchFilters := make([]string, len(filters["branch"].([]interface{})))
+	for i, bf := range filters["branch"].([]interface{}) {
+		branchFilters[i] = bf.(string)
+	}
+
 	return &Repository{
-		httpClient:   hc,
-		name:         r["name"].(string),
-		owner:        r["owner"].(string),
-		accessToken:  r["access_token"].(string),
-		senderID:     r["sender"].(string),
+		httpClient:  hc,
+		name:        r["name"].(string),
+		owner:       r["owner"].(string),
+		accessToken: r["access_token"].(string),
+		senderID:    r["sender"].(string),
+		filters: Filters{
+			branch: branchFilters,
+		},
 		isEnterprise: isEnterprise,
 		host:         h,
 	}
@@ -98,7 +119,17 @@ func (r Repository) FetchCodeReviewRequests(ctx context.Context) (repository.Cod
 			return nil, err
 		}
 
-		prs = append(prs, pr)
+		isContain := false
+		for _, b := range r.filters.branch {
+			if strings.Contains(pr.Head.Label, b) {
+				isContain = true
+				break
+			}
+		}
+
+		if isContain {
+			prs = append(prs, pr)
+		}
 	}
 
 	return &prs, nil
