@@ -61,10 +61,12 @@ func NewClient(hc *http.Client, repo interface{}) repository.Repository {
 		h = r["enterprise_host"].(string)
 	}
 
-	filters := r["filters"].(map[interface{}]interface{})
-	branchFilters := make([]string, len(filters["branch"].([]interface{})))
-	for i, bf := range filters["branch"].([]interface{}) {
-		branchFilters[i] = bf.(string)
+	branchFilters := make([]string, 0)
+	if r["filters"] != nil {
+		filters := r["filters"].(map[interface{}]interface{})
+		for _, bf := range filters["branch"].([]interface{}) {
+			branchFilters = append(branchFilters, bf.(string))
+		}
 	}
 
 	return &Repository{
@@ -119,10 +121,10 @@ func (r Repository) FetchCodeReviewRequests(ctx context.Context) (repository.Cod
 			return nil, err
 		}
 
-		isContain := false
+		isContain := true
 		for _, b := range r.filters.branch {
-			if strings.Contains(pr.Head.Label, b) {
-				isContain = true
+			if !strings.Contains(pr.Head.Label, b) {
+				isContain = false
 				break
 			}
 		}
