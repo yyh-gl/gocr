@@ -13,6 +13,12 @@ repositories:
       access_token: hogehogetoken
       # ID of Slack notification destination setting
       sender: dev-team
+      # Filtering condition
+      filters:
+        # This rule notify when branch name contains "hoge" and "foo"
+        branch:
+          - hoge
+          - foo
 
     gocr-general:
       name: gocr
