@@ -1,5 +1,7 @@
 # GoCR
 
+![](https://github.com/yyh-gl/gocr/workflows/Test/badge.svg)
+
 GoCR provides easy way for notifying request of code review.
 
 You will soon be able to start a notification of code review request.
