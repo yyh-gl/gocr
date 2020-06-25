@@ -26,6 +26,7 @@ type (
 
 	Filters struct {
 		branch []string
+		label  []string
 	}
 
 	PullRequest struct {
@@ -34,10 +35,15 @@ type (
 		Reviewers      []Reviewer     `json:"requested_reviewers"`
 		Head           Head           `json:"head"`
 		MergeableState MergeableState `json:"mergeable_state"`
+		Labels         []Label        `json:"labels"`
 	}
 
 	Head struct {
 		Label string `json:"label"`
+	}
+
+	Label struct {
+		Name string `json:"name"`
 	}
 
 	MergeableState string
@@ -62,10 +68,19 @@ func NewClient(hc *http.Client, repo interface{}) repository.Repository {
 	}
 
 	branchFilters := make([]string, 0)
+	labelFilters := make([]string, 0)
 	if r["filters"] != nil {
 		filters := r["filters"].(map[interface{}]interface{})
-		for _, bf := range filters["branch"].([]interface{}) {
-			branchFilters = append(branchFilters, bf.(string))
+		if filters["branch"] != nil {
+			for _, bf := range filters["branch"].([]interface{}) {
+				branchFilters = append(branchFilters, bf.(string))
+			}
+		}
+
+		if filters["label"] != nil {
+			for _, lf := range filters["label"].([]interface{}) {
+				labelFilters = append(labelFilters, lf.(string))
+			}
 		}
 	}
 
@@ -77,6 +92,7 @@ func NewClient(hc *http.Client, repo interface{}) repository.Repository {
 		senderID:    r["sender"].(string),
 		filters: Filters{
 			branch: branchFilters,
+			label:  labelFilters,
 		},
 		isEnterprise: isEnterprise,
 		host:         h,
@@ -121,15 +137,25 @@ func (r Repository) FetchCodeReviewRequests(ctx context.Context) (repository.Cod
 			return nil, err
 		}
 
-		isContain := true
+		isTargetBranch := len(r.filters.branch) == 0
 		for _, b := range r.filters.branch {
-			if !strings.Contains(pr.Head.Label, b) {
-				isContain = false
+			if strings.Contains(pr.Head.Label, b) {
+				isTargetBranch = true
 				break
 			}
 		}
 
-		if isContain {
+		hasTargetLabel := len(r.filters.label) == 0
+		for _, fl := range r.filters.label {
+			for _, l := range pr.Labels {
+				if l.Name == fl {
+					hasTargetLabel = true
+					break
+				}
+			}
+		}
+
+		if isTargetBranch && hasTargetLabel {
 			prs = append(prs, pr)
 		}
 	}
