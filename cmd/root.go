@@ -14,7 +14,7 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use:     "gocr",
-		Version: "0.3.4",
+		Version: "0.3.5",
 		Short:   "GoCR is planner for a notification of code review request.",
 		Long:    "GoCR provides easy way for notifying request of code review.\nYou will soon be able to start a notification of code review request.",
 		Run: func(cmd *cobra.Command, args []string) {
