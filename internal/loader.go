@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -22,11 +23,11 @@ type (
 
 func loadConfigFile(configPath string) *ConfigTemplate {
 	cp := strings.Replace(configPath, "yaml", "yml", 1)
-	f, err := os.Open(cp)
+	f, err := os.Open(filepath.Clean(cp))
 	if err != nil {
 		fmt.Println(err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
