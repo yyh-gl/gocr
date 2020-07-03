@@ -28,6 +28,7 @@ func Test_FetchPullRequestDetails_NotForEnterprise(t *testing.T) {
 					LinkURL:        "https://github.com/yyh-gl/gocr/pull/2",
 					Reviewers:      []github.Reviewer{},
 					Head:           github.Head{Label: "yyh-gl:samle2"},
+					Labels:         []github.Label{},
 					MergeableState: "clean",
 				},
 			},

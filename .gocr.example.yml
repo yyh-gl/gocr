@@ -15,10 +15,14 @@ repositories:
       sender: dev-team
       # Filtering condition
       filters:
-        # This rule notify when branch name contains "hoge" and "foo"
+        # GoCR notifies when branch name contains "hoge" and "foo"
         branch:
           - hoge
           - foo
+        # GoCR notifies when code review request has "bug" and "request" label
+        label:
+          - bug
+          - request
 
     gocr-general:
       name: gocr
