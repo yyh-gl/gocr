@@ -28,4 +28,4 @@ GoCR load `.gocr.yml` from root directory by default.
 
 You can decide a path to config file by using `cfgPath`（`-c`） option.
 
-`$ gocr -c /path/to/.goct.yml`
+`$ gocr -c /path/to/.gocr.yml`
